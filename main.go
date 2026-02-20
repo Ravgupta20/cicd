@@ -46,10 +46,15 @@ func main() {
 					},
 					{
 						Name: "Install dependencies",
-						Run:  "go mod download"},
+						Run:  "go mod download",
+					},
 					{
 						Name: "Run tests",
 						Run:  "go test ./...",
+					},
+					{
+						Name: "Example Secret",
+						Run:  "echo ${{ secrets.EXAMPLE_SECRET}}",
 					},
 				},
 			},
