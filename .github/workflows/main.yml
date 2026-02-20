@@ -11,3 +11,5 @@ jobs:
               run: go mod download
             - name: Run tests
               run: go test ./...
+            - name: Example Secret
+              run: echo ${{ secrets.EXAMPLE_SECRET}}
