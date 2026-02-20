@@ -2,65 +2,67 @@ package main
 
 import (
 	"fmt"
-	"strings"
+	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
-type CIPath struct {
-	Platform string
-	RepoType string
+type Workflow struct {
+	Name string         `yaml:"name"`
+	On   []string       `yaml:"on"`
+	Jobs map[string]Job `yaml:"jobs"`
 }
 
-func cleanPlatform(s string) string {
-	return strings.TrimSpace(strings.ToLower(s))
+type Job struct {
+	RunsOn string `yaml:"runs-on"`
+	Steps  []Step `yaml:"steps"`
 }
 
-func NewCIPath(platform string) CIPath {
-	platformLower := cleanPlatform(platform)
-
-	var repoType string
-	switch platformLower {
-	case "gitHub":
-		repoType = ".github/workflows"
-		platform = "Github"
-	case "gitLab":
-		repoType = ".gitlab-ci.yml"
-		platform = "Gitlab"
-	case "bitbucket":
-		repoType = "bitbucket-pipelines.yml"
-		platform = "Bitbucket"
-	default:
-		repoType = ""
-		platform = "Unknown"
-	}
-
-	return CIPath{
-		Platform: platform,
-		RepoType: repoType,
-	}
-}
-
-type Config struct {
-	Appname string   `yaml:"app_name"`
-	Port    int      `yaml:"port"`
-	Steps   []string `yaml:"steps"`
+type Step struct {
+	Name string `yaml:"name,omitempty"`
+	Uses string `yaml:"uses,omitempty"`
+	Run  string `yaml:"run,omitempty"`
 }
 
 func main() {
+	var filePath = "./.github/workflows/"
+	var file *os.File
 
-	ciPath := NewCIPath("GitHub")
-	fmt.Printf("%v\n%v", ciPath.Platform, ciPath.RepoType)
-	// 	data := Config{
-	// 		Appname: "Inventory-service",
-	// 		Port:    8080,
-	// 		Steps:   []string{"Install", "Test", "Deploy"},
-	// 	}
+	err := os.MkdirAll(filePath, os.ModePerm)
+	if err != nil {
+		fmt.Printf("error creating directory: %v\n", err)
+	}
 
-	// 	fmt.Println("hello world")
+	workflow := Workflow{
+		Name: "Basic CI",
+		On:   []string{"push"},
+		Jobs: map[string]Job{
+			"build": {
+				RunsOn: "ubuntu-latest",
+				Steps: []Step{
+					{
+						Name: "Checkout code",
+						Uses: "actions/checkout@v3",
+					},
+					{
+						Name: "Install dependencies",
+						Run:  "go mod download"},
+					{
+						Name: "Run tests",
+						Run:  "go test ./...",
+					},
+				},
+			},
+		},
+	}
 
-	// 	file, _ := os.Create("config.yml")
-	// 	defer file.Close()
+	file, err = os.Create(filePath + "main.yml")
+	if err != nil {
+		fmt.Printf("error creating file: %v\n", err)
+	}
 
-	// 	encoder := yaml.NewEncoder(file)
-	// 	encoder.Encode(data)
+	defer file.Close()
+	encoder := yaml.NewEncoder(file)
+	encoder.Encode(workflow)
 
 }
