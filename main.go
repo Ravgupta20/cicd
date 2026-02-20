@@ -47,7 +47,7 @@ func main() {
 
 func GenerateWorkflow() Workflow {
 	return Workflow{
-		Name: "",
+		Name: "Basic Ci",
 		On:   []string{"push"},
 		Jobs: map[string]Job{
 			"build": {
