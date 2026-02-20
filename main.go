@@ -27,14 +27,27 @@ type Step struct {
 func main() {
 	var filePath = "./.github/workflows/"
 	var file *os.File
+	workflow := GenerateWorkflow()
 
 	err := os.MkdirAll(filePath, os.ModePerm)
 	if err != nil {
 		fmt.Printf("error creating directory: %v\n", err)
 	}
 
-	workflow := Workflow{
-		Name: "Basic CI",
+	file, err = os.Create(filePath + "main.yml")
+	if err != nil {
+		fmt.Printf("error creating file: %v\n", err)
+	}
+
+	defer file.Close()
+	encoder := yaml.NewEncoder(file)
+	encoder.Encode(workflow)
+
+}
+
+func GenerateWorkflow() Workflow {
+	return Workflow{
+		Name: "Basic Ci",
 		On:   []string{"push"},
 		Jobs: map[string]Job{
 			"build": {
@@ -60,14 +73,5 @@ func main() {
 			},
 		},
 	}
-
-	file, err = os.Create(filePath + "main.yml")
-	if err != nil {
-		fmt.Printf("error creating file: %v\n", err)
-	}
-
-	defer file.Close()
-	encoder := yaml.NewEncoder(file)
-	encoder.Encode(workflow)
 
 }
