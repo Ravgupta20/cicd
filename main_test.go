@@ -7,7 +7,7 @@ import (
 func TestGenerateWorkflow(t *testing.T) {
 	workflow := GenerateWorkflow()
 
-	if workflow.Name != "Basic C" {
+	if workflow.Name != "Basic CI" {
 		t.Errorf("Missing workflow name , got '%s'", workflow.Name)
 	}
 
